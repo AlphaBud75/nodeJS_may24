@@ -17,6 +17,7 @@ async function listDatabases(client) {
 const client = new MongoClient(uri);
 const mongodb_connect = async () => {
     console.log('mongodb_connect()');
+
     try {
         await client.connect();
         await listDatabases(client);
@@ -48,6 +49,9 @@ console.log('server.js is running');
 
 
 // POST handler
+server.on('request',(req, res)=>{
+    console.log('this is the second on() method');
+})
 
 server.on(
     'request', (req, res) => {
@@ -69,7 +73,8 @@ server.on(
             key_name = body_obj.key_name;
             query_value = body_obj['query_value'];
 
-            console.log('69', key_name);
+            console.log('key_name:', key_name);
+            console.log('query_value:', query_value);
         });
         req.on('end', () => {
 
@@ -77,8 +82,7 @@ server.on(
             findOneListingByName(client, 'sample_mflix', 'comments', key_name, query_value)
                 .then(
                     (resolved, rejected) => {
-                        console.log('68');
-                        console.log(resolved);
+                        console.log('resolved:' , resolved);
                         res.end(JSON.stringify(resolved))
                     }
                 )
@@ -93,13 +97,15 @@ server.on(
     }
 )
 
+
+
 async function findOneListingByName(db_client_object, db_name, collection_name, key_name, query_value) {
 
     console.log('90 params: ', key_name, query_value);
     try {
         await client.connect();
 
-        let databasesList = await client.db(db_name).collections();
+        // let databasesList = await client.db(db_name).collections();
         // console.log(databasesList);
 
         // .admin().
