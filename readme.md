@@ -1,5 +1,5 @@
 # to install dependencies
-npm install
+npm install 
 
 # run backend(http):
 node --env-file=.env .\server.js
