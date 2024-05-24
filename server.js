@@ -1,8 +1,12 @@
 const http = require('http');
-const { parse } = require('querystring');
+// const { parse } = require('querystring');
 const { MongoClient } = require('mongodb');
+const { isObject } = require('util');
 
-const uri = "mongodb+srv://new_user_31:OMWzdkHXxn6A0eL1@cluster0-apr12.p6voxqk.mongodb.net/";
+const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0-apr12.p6voxqk.mongodb.net/`;
+
+console.log(uri);
+// console.log(process.env.DB_USERNAME);
 
 async function listDatabases(client) {
     databasesList = await client.db().admin().listDatabases();
@@ -57,18 +61,30 @@ server.on(
         req.on('data', chunk => {
             body += chunk.toString();
         });
-        req.on('end', () => {
+        req.on('data', chunk => {
             console.log(body);
 
-            findOneListingByName(client, 'sample_mflix', 'comments', body.key_name, body.query_value)
+            body_obj = JSON.parse(body);
+
+            key_name = body_obj.key_name;
+            query_value = body_obj['query_value'];
+
+            console.log('69', key_name);
+        });
+        req.on('end', () => {
+
+
+            findOneListingByName(client, 'sample_mflix', 'comments', key_name, query_value)
                 .then(
                     (resolved, rejected) => {
+                        console.log('68');
                         console.log(resolved);
                         res.end(JSON.stringify(resolved))
                     }
                 )
                 .catch(
                     (resolved, rejected) => {
+                        console.log('73');
                         res.end(rejected)
                     }
                 )
@@ -79,11 +95,12 @@ server.on(
 
 async function findOneListingByName(db_client_object, db_name, collection_name, key_name, query_value) {
 
+    console.log('90 params: ', key_name, query_value);
     try {
         await client.connect();
 
         let databasesList = await client.db(db_name).collections();
-        console.log(databasesList);
+        // console.log(databasesList);
 
         // .admin().
         // .listDatabases();
@@ -94,7 +111,9 @@ async function findOneListingByName(db_client_object, db_name, collection_name, 
             .db(db_name)
 
             .collection(collection_name)
-            .findOne({ key_name: query_value });
+            .findOne({ [key_name]: query_value });
+
+        console.log(key_name, query_value);
 
         if (result) {
             console.log(`Found a listing in the collection with the key: ${key_name}: '${query_value}':`);
